@@ -73,6 +73,32 @@ class Sitemap
     private $writer;
 
     /**
+     * @var string
+     */
+    private $alternateLanguage = array();
+
+    /**
+     * @var string item's priority (0.0-1.0). Default null is equal to 0.5
+     */
+    private $priority;
+
+    /**
+     * @var float change frequency. Use one of self:: constants here
+     */
+    private $frequency;
+
+    /**
+     * @var integer last modification timestamp
+     */
+    private $lastModified;
+
+    /**
+     * @var string location item URL
+     */
+    private $location;
+
+
+    /**
      * @param string $filePath path of the file to write to
      * @throws \InvalidArgumentException
      */
@@ -144,16 +170,162 @@ class Sitemap
     }
 
     /**
+     * @param $lang
+     * @param $hreflang
+     * @return $this
+     */
+    public function setAlternateLanguage($lang, $hreflang)
+    {
+        $this->alternateLanguage[$lang] = $hreflang;
+        return $this;
+    }
+
+    /**
+     * @param $priority
+     * @return $this
+     */
+    public function setPriority($priority)
+    {
+        if (!is_numeric($priority) || $priority < 0 || $priority > 1) {
+            throw new \InvalidArgumentException(
+                "Please specify valid priority. Valid values range from 0.0 to 1.0. You have specified: {$priority}."
+            );
+        }
+        $this->priority = $priority;
+        return $this;
+    }
+
+    /**
+     * @param $frequency
+     * @return $this
+     */
+    public function setFrequency($frequency)
+    {
+        if (!in_array($frequency, $this->validFrequencies, true)) {
+            throw new \InvalidArgumentException(
+                'Please specify valid changeFrequency. Valid values are: '
+                . implode(', ', $this->validFrequencies)
+                . "You have specified: {$frequency}."
+            );
+        }
+        $this->frequency = $frequency;
+        return $this;
+    }
+
+    /**
+     * @param $lastModified
+     * @return $this
+     */
+    public function setLastModified($lastModified)
+    {
+        $this->lastModified = $lastModified;
+        return $this;
+    }
+
+    /**
+     * @param $location
+     * @return $this
+     */
+    public function setLocation($location)
+    {
+        if (false === filter_var($location, FILTER_VALIDATE_URL)) {
+            throw new \InvalidArgumentException(
+                "The location must be a valid URL. You have specified: {$location}."
+            );
+        }
+        $this->location = $location;
+        return $this;
+    }
+
+    private function unsetLocation()
+    {
+        $this->location = null;
+    }
+
+    private function unSetAlternateLanguage()
+    {
+        $this->alternateLanguage = array();
+    }
+
+    private function unSetPriority()
+    {
+        $this->priority = null;
+    }
+
+    private function unSetFrequency()
+    {
+        $this->frequency = null;
+    }
+
+    private function unSetLastModifiedElement()
+    {
+        $this->lastModified = null;
+    }
+
+    private function addAlternateLanguageElement()
+    {
+        $this->buildAlternateLanguageElements();
+        $this->unSetAlternateLanguage();
+
+    }
+
+    private function addPriorityElement()
+    {
+        $this->writer->writeElement('priority', number_format($this->priority, 1, '.', ','));
+        $this->unSetPriority();
+    }
+
+    private function addLocationElement()
+    {
+        $this->writer->writeElement('loc', $this->location);
+        $this->unsetLocation();
+    }
+
+    private function addFrequencyElement()
+    {
+        $this->writer->writeElement('changefreq', $this->frequency);
+        $this->unSetFrequency();
+    }
+
+    private function addLastModifiedElement()
+    {
+        $this->writer->writeElement('lastmod', date('c', $this->lastModified));
+        $this->unSetLastModifiedElement();
+    }
+
+    /**
+     * @return bool Check necessity to add Alternate Language Element
+     */
+    private function needAlternateLanguageElement()
+    {
+        return !empty($this->alternateLanguage);
+    }
+
+    private function buildAlternateLanguageElements()
+    {
+        foreach ($this->alternateLanguage as $alternateLanguage => $alternateLanguageHref) {
+            $this->writer->startElement('xhtml:link');
+            $this->writer->startAttribute('rel');
+            $this->writer->text('alternate');
+            $this->writer->endAttribute();
+
+            $this->writer->startAttribute('hreflang');
+            $this->writer->text($alternateLanguage);
+            $this->writer->endAttribute();
+
+            $this->writer->startAttribute('href');
+            $this->writer->text($alternateLanguageHref);
+            $this->writer->endAttribute();
+            $this->writer->endElement();
+        }
+    }
+
+    /**
      * Adds a new item to sitemap
-     *
-     * @param string $location location item URL
-     * @param integer $lastModified last modification timestamp
-     * @param float $changeFrequency change frequency. Use one of self:: constants here
-     * @param string $priority item's priority (0.0-1.0). Default null is equal to 0.5
      *
      * @throws \InvalidArgumentException
      */
-    public function addItem($location, $lastModified = null, $changeFrequency = null, $priority = null)
+    public function addItem()
     {
         if ($this->urlsCount === 0) {
             $this->createNewFile();
@@ -167,37 +339,24 @@ class Sitemap
         }
         $this->writer->startElement('url');
 
-        if (false === filter_var($location, FILTER_VALIDATE_URL)) {
-            throw new \InvalidArgumentException(
-                "The location must be a valid URL. You have specified: {$location}."
-            );
+        if($this->location) {
+            $this->addLocationElement();
         }
 
-        $this->writer->writeElement('loc', $location);
-
-        if ($lastModified !== null) {
-            $this->writer->writeElement('lastmod', date('c', $lastModified));
+        if ($this->lastModified) {
+            $this->addLastModifiedElement();
         }
 
-        if ($changeFrequency !== null) {
-            if (!in_array($changeFrequency, $this->validFrequencies, true)) {
-                throw new \InvalidArgumentException(
-                    'Please specify valid changeFrequency. Valid values are: '
-                    . implode(', ', $this->validFrequencies)
-                    . "You have specified: {$changeFrequency}."
-                );
-            }
-
-            $this->writer->writeElement('changefreq', $changeFrequency);
+        if ($this->frequency) {
+            $this->addFrequencyElement();
         }
 
-        if ($priority !== null) {
-            if (!is_numeric($priority) || $priority < 0 || $priority > 1) {
-                throw new \InvalidArgumentException(
-                    "Please specify valid priority. Valid values range from 0.0 to 1.0. You have specified: {$priority}."
-                );
-            }
-            $this->writer->writeElement('priority', number_format($priority, 1, '.', ','));
+        if($this->priority) {
+            $this->addPriorityElement();
+        }
+
+        if($this->needAlternateLanguageElement()) {
+            $this->addAlternateLanguageElement();
         }
 
         $this->writer->endElement();
