@@ -15,12 +15,17 @@ Features
 
 Installation
 ------------
+in composer.json
 
-Installation via Composer is very simple:
-
-```
-composer require samdark/sitemap
-```
+"require": {
+	 "artemPerepechai/sitemap" : "dev-master"
+	},
+	"repositories": [
+		{
+			"url": "https://github.com/artemPerepechai/sitemap",
+			"type": "vcs"
+		}
+	],
 
 After that, make sure your application autoloads Composer classes by including
 `vendor/autoload.php`.
