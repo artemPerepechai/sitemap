@@ -36,10 +36,14 @@ use samdark\sitemap\Index;
 $sitemap = new Sitemap(__DIR__ . '/sitemap.xml');
 
 // add some URLs
-$sitemap->addItem('http://example.com/mylink1');
-$sitemap->addItem('http://example.com/mylink2', time());
-$sitemap->addItem('http://example.com/mylink3', time(), Sitemap::HOURLY);
-$sitemap->addItem('http://example.com/mylink4', time(), Sitemap::DAILY, 0.3);
+$sitemap->setLocation('http://example.com/mylink4')
+        ->setLastModified(time())
+        ->setFrequency(Sitemap::DAILY)
+        ->setAlternateLanguage('en', 'http://example.com/en')
+        ->setAlternateLanguage('de', 'http://example.com/de')
+        ->setAlternateLanguage('fr', 'http://example.com/fr')
+        ->setPriority(0.1)
+        ->addItem();
 
 // write it
 $sitemap->write();
@@ -51,9 +55,17 @@ $sitemapFileUrls = $sitemap->getSitemapUrls('http://example.com/');
 $staticSitemap = new Sitemap(__DIR__ . '/sitemap_static.xml');
 
 // add some URLs
-$staticSitemap->addItem('http://example.com/about');
-$staticSitemap->addItem('http://example.com/tos');
-$staticSitemap->addItem('http://example.com/jobs');
+$staticSitemap->setLocation('http://example.com/about')
+              ->setLastModified(time())
+              ->addItem();
+              
+$staticSitemap->setLocation('http://example.com/tos')
+              ->setLastModified(time())
+              ->addItem();
+              
+$staticSitemap->setLocation('http://example.com/jobs')
+              ->setLastModified(time())
+              ->addItem();
 
 // write it
 $staticSitemap->write();
