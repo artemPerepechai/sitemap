@@ -6,7 +6,8 @@ use XMLWriter;
 /**
  * A class for generating Sitemaps (http://www.sitemaps.org/)
  *
- * @author Alexander Makarov <sam@rmcreative.ru>
+ * @author origin Alexander Makarov <sam@rmcreative.ru>
+ * @author vendor Artem Perepechai aperepechai@gmail.com
  */
 class Sitemap
 {
