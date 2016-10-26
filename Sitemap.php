@@ -140,6 +140,7 @@ class Sitemap
         $this->writer->setIndent($this->useIndent);
         $this->writer->startElement('urlset');
         $this->writer->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+        $this->writer->writeAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
     }
 
     /**
