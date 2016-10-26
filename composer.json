@@ -9,6 +9,11 @@
     "license": "BSD-3-Clause",
     "authors": [
         {
+            "name": "Alexander Makarov",
+            "email": "sam@rmcreative.ru",
+            "homepage": "http://rmcreative.ru/"
+        },
+        {
             "name": "Artem Perepechai",
             "email": "aperepechai@gmail.com",
             "homepage": ""
@@ -23,7 +28,7 @@
     },
     "autoload": {
         "psr-4": {
-            "samdark\\sitemap\\": ""
+            "artemPerepechai\\sitemap\\": ""
         }
     }
 }
