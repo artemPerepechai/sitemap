@@ -1,5 +1,5 @@
 <?php
-namespace samdark\sitemap;
+namespace artemPerepechai\sitemap;
 
 use XMLWriter;
 
